@@ -14,6 +14,7 @@ import { axiosInstance } from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -42,10 +43,10 @@ export function SignupForm({
 
   const { mutateAsync: register, isPending } = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const result = await axiosInstance.post("/api/users/register", {
+      const result = await axiosInstance.post("/auth/register", {
+        name: data.name,
         email: data.email,
         password: data.password,
-        name: data.name,
       });
       return result.data;
     },
@@ -53,8 +54,8 @@ export function SignupForm({
       toast.success("Register success");
       router.push("/login");
     },
-    onError: () => {
-      toast.error("Register Failed");
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data.message ?? "Something went wrong!");
     },
   });
 
