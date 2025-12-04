@@ -20,6 +20,7 @@ import { axiosInstance } from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -47,8 +48,8 @@ export function LoginForm({
 
   const { mutateAsync: login, isPending } = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const result = await axiosInstance.post("/api/users/login", {
-        login: data.email,
+      const result = await axiosInstance.post("/auth/login", {
+        email: data.email,
         password: data.password,
       });
 
@@ -56,17 +57,18 @@ export function LoginForm({
     },
     onSuccess: async (result) => {
       await signIn("credentials", {
+        id: result.id,
+        name: result.name,
         email: result.email,
-        objectId: result.objectId,
-        userToken: result["user-token"],
+        accessToken: result.accessToken,
         redirect: false,
       });
 
       toast.success("Login success");
       router.push("/");
     },
-    onError: () => {
-      toast.error("Login failed");
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data.message ?? "Something went wrong!");
     },
   });
 

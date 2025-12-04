@@ -4,9 +4,10 @@ import Credentials from "next-auth/providers/credentials";
 declare module "next-auth" {
   interface Session {
     user: {
+      id: string;
+      name: string;
       email: string;
-      objectId: string;
-      userToken: string;
+      accessToken: string;
     };
   }
 }
