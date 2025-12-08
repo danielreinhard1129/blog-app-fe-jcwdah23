@@ -13,19 +13,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { axiosInstance } from "@/lib/axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
-interface ThumbnailResponse {
-  fileURL: string;
-  filePath: string;
-}
-
 const formSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters."),
-  author: z.string().min(3, "Author must be at least 3 characters."),
   category: z.string().min(3, "Category must be at least 3 characters."),
   description: z
     .string()
@@ -36,12 +32,12 @@ const formSchema = z.object({
 
 const WritePage = () => {
   const router = useRouter();
+  const session = useSession();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      author: "",
       category: "",
       description: "",
       content: "",
@@ -51,32 +47,24 @@ const WritePage = () => {
 
   const { mutateAsync: write, isPending } = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      // 1. upload thumbnail ke file service backendless
       const formData = new FormData();
-      const folderName = "images";
-      const fileName = Date.now() + Math.floor(Math.random() * 1000);
-      const url = `/api/files/${folderName}/${fileName}`;
 
-      formData.append("file", data.thumbnail);
+      formData.append("title", data.title);
+      formData.append("description", data.description);
+      formData.append("category", data.category);
+      formData.append("content", data.content);
+      formData.append("thumbnail", data.thumbnail);
 
-      const result = await axiosInstance.post<ThumbnailResponse>(url, formData);
-
-      // 2. create new data ke database backendless
-      await axiosInstance.post(`/api/data/Blogs`, {
-        author: data.author,
-        category: data.category,
-        content: data.content,
-        description: data.description,
-        title: data.title,
-        thumbnail: result.data.fileURL,
+      await axiosInstance.post(`/blogs/`, formData, {
+        headers: { Authorization: `Bearer ${session.data?.user.accessToken}` },
       });
     },
     onSuccess: () => {
       toast.success("Create blog success");
       router.push("/");
     },
-    onError: () => {
-      toast.error("Create blog failed");
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data.message ?? "Something went wrong!");
     },
   });
 
@@ -102,25 +90,6 @@ const WritePage = () => {
                     id="title"
                     aria-invalid={fieldState.invalid}
                     placeholder="Your title"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="author"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="author">Author</FieldLabel>
-                  <Input
-                    {...field}
-                    id="author"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Author"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
