@@ -9,7 +9,7 @@ interface BlogCardProps {
 
 const BlogCard = (props: BlogCardProps) => {
   return (
-    <Link href={`/articles/${props.blog.objectId}`}>
+    <Link href={`/articles/${props.blog.slug}`}>
       <div className="space-y-2 rounded-xl border p-8">
         <Image
           src={props.blog.thumbnail}
@@ -22,8 +22,8 @@ const BlogCard = (props: BlogCardProps) => {
         </p>
         <h2 className="line-clamp-2 text-xl font-bold">{props.blog.title}</h2>
         <p className="text-xs">
-          {format(new Date(props.blog.created), "dd MMM yyyy")} -{" "}
-          {props.blog.author}
+          {format(new Date(props.blog.createdAt), "dd MMM yyyy")} -{" "}
+          {props.blog.user.name}
         </p>
         <p className="line-clamp-3">{props.blog.description}</p>
       </div>
