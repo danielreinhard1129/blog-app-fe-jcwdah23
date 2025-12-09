@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { axiosInstance } from "@/lib/axios";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -33,6 +33,7 @@ const formSchema = z.object({
 const WritePage = () => {
   const router = useRouter();
   const session = useSession();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,6 +62,7 @@ const WritePage = () => {
     },
     onSuccess: () => {
       toast.success("Create blog success");
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
       router.push("/");
     },
     onError: (error: AxiosError<{ message: string }>) => {

@@ -42,9 +42,9 @@ const ArticleDetail = async (props: ArticleDetailProps) => {
           {blog.category}
         </p>
         <h1 className="text-4xl font-bold">{blog.title}</h1>
-        <p className="font-light">
+        {/* <p className="font-light">
           {format(new Date(blog.created), "dd MMM yyyy")} - {blog.author}
-        </p>
+        </p> */}
         <div className="relative h-[260px] w-full overflow-hidden rounded-xl">
           <Image
             src={blog.thumbnail}
