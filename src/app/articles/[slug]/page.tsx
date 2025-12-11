@@ -10,7 +10,9 @@ interface ArticleDetailProps {
 }
 
 const getBlog = cache(async (slug: string) => {
-  const response = await fetch(`http://localhost:8000/blogs/${slug}`);
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL_API}/blogs/${slug}`,
+  );
   if (!response.ok) return notFound();
   const blog: Blog = await response.json();
   return blog;
