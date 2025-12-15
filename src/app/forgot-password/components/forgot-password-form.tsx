@@ -97,7 +97,7 @@ export function ForgotPasswordForm({
 
               <Field>
                 <Button type="submit" form="form-login" disabled={isPending}>
-                  {isPending ? "Loading" : "Login"}
+                  {isPending ? "Loading" : "Submit"}
                 </Button>
               </Field>
             </FieldGroup>
